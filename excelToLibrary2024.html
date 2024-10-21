@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Library</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+
+  </head>
+  <body> 
+<!-- File input and button -->
+<div class="container text-center">
+    <div class="row p-2">
+        <label for="fileInput">Choose Library Excel File</label>
+        <input type="file" id="fileInput"/>
+    </div>
+    <div class="row p-2">
+        <button id="addBookBtn">Add Book</button> <!-- New button to open add book modal -->
+    </div>
+    <div class="row p-2">
+        <label for="fileName">Library Name</label>
+        <input type="text" id="fileName" placeholder="Add Library Name Before Downloading Changes" />
+        <button id="downloadBtn">Download Library</button> <!-- Download button -->
+    </div>
+
+</div>
+    
+
+<!-- Table for displaying books -->
+<table id="bookTable" border="1" class="table table-striped">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Author</th>
+            <th>ISBN</th> <!-- New ISBN column -->
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+</table>
+
+<!-- Modal for editing book details -->
+<div id="editModal" style="display:none;">
+    <div style="background-color: white; padding: 20px; border: 1px solid #ccc; width: 300px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+        <h2>Edit Book</h2>
+        <label for="editTitle">Title:</label>
+        <input type="text" id="editTitle" />
+        <br/>
+        <label for="editAuthor">Author:</label>
+        <input type="text" id="editAuthor" />
+        <br/>
+        <label for="editISBN">ISBN:</label> <!-- New ISBN input -->
+        <input type="text" id="editISBN" />
+        <br/>
+        <button id="saveBtn">Save</button>
+        <button id="closeModalBtn">Cancel</button>
+    </div>
+</div>
+
+<!-- Modal for adding a new book -->
+<div id="addModal" style="display:none;">
+    <div style="background-color: white; padding: 20px; border: 1px solid #ccc; width: 300px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+        <h2>Add Book</h2>
+        <label for="addTitle">Title:</label>
+        <input type="text" id="addTitle" />
+        <br/>
+        <label for="addAuthor">Author:</label>
+        <input type="text" id="addAuthor" />
+        <br/>
+        <label for="addISBN">ISBN:</label> <!-- New ISBN input -->
+        <input type="text" id="addISBN" />
+        <br/>
+        <button id="addSaveBtn">Add Book</button>
+        <button id="addCloseModalBtn">Cancel</button>
+    </div>
+</div>
+
+<pre id="output"></pre>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+<script>
+    let currentBookIndex = -1;
+    let booksData = [];
+
+    document.getElementById('fileInput').addEventListener('change', function () {
+        const file = this.files[0];
+
+        if (!file) {
+            alert("Please select a file.");
+            return;
+        }
+
+        // Check if the selected file is an Excel file
+        if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+            alert("Please upload a valid Excel file (.xlsx or .xls).");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+
+            // Convert to JSON
+            booksData = XLSX.utils.sheet_to_json(worksheet);
+
+            // Clear previous table data
+            updateTable();
+        };
+
+        reader.readAsArrayBuffer(file);
+    });
+
+    function updateTable() {
+        const tableBody = document.getElementById('tableBody');
+        tableBody.innerHTML = '';
+
+        // Populate the table
+        booksData.forEach((book, index) => {
+            const row = document.createElement('tr');
+
+            const titleCell = document.createElement('td');
+            titleCell.textContent = book.Title || "none";
+            row.appendChild(titleCell);
+
+            const authorCell = document.createElement('td');
+            authorCell.textContent = book.Author || "none";
+            row.appendChild(authorCell);
+
+            const isbnCell = document.createElement('td');
+            isbnCell.textContent = book.ISBN ? book.ISBN : "none";
+            row.appendChild(isbnCell);
+
+            // Create the button
+            const actionCell = document.createElement('td');
+            const editButton = document.createElement('button');
+            editButton.textContent = 'Edit';
+            editButton.onclick = function () {
+                openEditModal(index);
+            };
+            actionCell.appendChild(editButton);
+            row.appendChild(actionCell);
+
+            tableBody.appendChild(row);
+        });
+    }
+
+    function openEditModal(index) {
+        currentBookIndex = index;
+        const book = booksData[index];
+
+        document.getElementById('editTitle').value = book.Title || "";
+        document.getElementById('editAuthor').value = book.Author || "";
+        document.getElementById('editISBN').value = book.ISBN || "";
+
+        document.getElementById('editModal').style.display = 'block';
+    }
+
+    document.getElementById('saveBtn').addEventListener('click', function () {
+        if (currentBookIndex >= 0) {
+            booksData[currentBookIndex].Title = document.getElementById('editTitle').value;
+            booksData[currentBookIndex].Author = document.getElementById('editAuthor').value;
+            booksData[currentBookIndex].ISBN = document.getElementById('editISBN').value || "none";
+
+            updateTable();
+            closeEditModal();
+        }
+    });
+
+    document.getElementById('closeModalBtn').addEventListener('click', closeEditModal);
+
+    function closeEditModal() {
+        document.getElementById('editModal').style.display = 'none';
+    }
+
+    // Add Book Functionality
+    document.getElementById('addBookBtn').addEventListener('click', function () {
+        document.getElementById('addTitle').value = '';
+        document.getElementById('addAuthor').value = '';
+        document.getElementById('addISBN').value = '';
+
+        document.getElementById('addModal').style.display = 'block';
+    });
+
+    document.getElementById('addSaveBtn').addEventListener('click', function () {
+        const newBook = {
+            Title: document.getElementById('addTitle').value,
+            Author: document.getElementById('addAuthor').value,
+            ISBN: document.getElementById('addISBN').value || "none"
+        };
+
+        booksData.push(newBook);
+        updateTable();
+        closeAddModal();
+    });
+
+    document.getElementById('addCloseModalBtn').addEventListener('click', closeAddModal);
+
+    function closeAddModal() {
+        document.getElementById('addModal').style.display = 'none';
+    }
+
+    // Download Functionality
+    document.getElementById('downloadBtn').addEventListener('click', function () {
+        const fileName = document.getElementById('fileName').value || "updated_library"; // Default name if empty
+        const ws = XLSX.utils.json_to_sheet(booksData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Library");
+
+        // Generate download
+        XLSX.writeFile(wb, `${fileName}.xlsx`); // Use the custom file name
+    });
+</script>
+
+    
+
+</body>
+</html>
