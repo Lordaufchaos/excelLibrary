@@ -7,17 +7,32 @@
     <title>Library</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <style>
+        button {
+    padding: 8px 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+    </style>
 
   </head>
   <body> 
 <!-- File input and button -->
-<div class="container text-center">
+<div class="container text-center bg-dark text-light">
     <div class="row p-2">
         <label for="fileInput">Choose Library Excel File</label>
         <input type="file" id="fileInput"/>
     </div>
     <div class="row p-2">
-        <button id="addBookBtn" class="btn btn-secondary">Add Book</button> <!-- New button to open add book modal -->
+        <button id="addBookBtn" class="btn btn-danger">Add Book</button> <!-- New button to open add book modal -->
     </div>
     <div class="row p-2">
         <label for="fileName">Library Name</label>
@@ -26,13 +41,13 @@
     </div>
     <div class="row p-2">
         <input type="text" id="searchInput" placeholder="search text" />
-        <button id="search" class="btn btn-primary">Search</button> <!-- search button -->
+        <button id="search" class="btn btn-danger">Search</button> <!-- search button -->
     </div>
 </div>
     
 
 <!-- Table for displaying books -->
-<table id="bookTable" border="1" class="table table-striped">
+<table id="bookTable" border="1" class="table table-dark table-striped table-hover">
     <thead>
         <tr>
             <th>Title</th>
@@ -57,8 +72,8 @@
         <label for="editISBN">ISBN:</label> <!-- New ISBN input -->
         <input type="text" id="editISBN" />
         <br/>
-        <button id="saveBtn">Save</button>
-        <button id="closeModalBtn">Cancel</button>
+        <button id="saveBtn" class="btn btn-danger">Save</button>
+        <button id="closeModalBtn" class="btn btn-danger">Cancel</button>
     </div>
 </div>
 
@@ -75,14 +90,14 @@
         <label for="addISBN">ISBN:</label> <!-- New ISBN input -->
         <input type="text" id="addISBN" />
         <br/>
-        <button id="addSaveBtn">Add Book</button>
-        <button id="addCloseModalBtn">Cancel</button>
+        <button id="addSaveBtn" class="btn btn-danger">Add Book</button>
+        <button id="addCloseModalBtn" class="btn btn-danger">Cancel</button>
     </div>
 </div>
 
 <pre id="output"></pre>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
 <script>
     let currentBookIndex = -1;
@@ -127,6 +142,8 @@
         // Populate the table
         booksData.forEach((book, index) => {
             const row = document.createElement('tr');
+            
+            
 
             const titleCell = document.createElement('td');
             titleCell.textContent = book.Title || "none";
@@ -144,6 +161,8 @@
             const actionCell = document.createElement('td');
             const editButton = document.createElement('button');
             editButton.textContent = 'Edit';
+            editButton.classList.add('btn');
+
             editButton.onclick = function () {
                 openEditModal(index);
             };
@@ -152,6 +171,9 @@
 
             tableBody.appendChild(row);
         });
+        document.querySelectorAll('button').forEach(button => {
+    button.classList.add('btn');
+});
     }
 
     function openEditModal(index) {
