@@ -17,14 +17,17 @@
         <input type="file" id="fileInput"/>
     </div>
     <div class="row p-2">
-        <button id="addBookBtn">Add Book</button> <!-- New button to open add book modal -->
+        <button id="addBookBtn" class="btn btn-secondary">Add Book</button> <!-- New button to open add book modal -->
     </div>
     <div class="row p-2">
         <label for="fileName">Library Name</label>
-        <input type="text" id="fileName" placeholder="Add Library Name Before Downloading Changes" />
-        <button id="downloadBtn">Download Library</button> <!-- Download button -->
+        <input type="text" id="fileName" placeholder="Add Library Name Before Downloading Changes" required/>
+        <button id="downloadBtn" class="btn btn-secondary">Download Library</button> <!-- Download button -->
     </div>
-
+    <div class="row p-2">
+        <input type="text" id="searchInput" placeholder="search text" />
+        <button id="search" class="btn btn-primary">Search</button> <!-- search button -->
+    </div>
 </div>
     
 
@@ -216,6 +219,52 @@
         // Generate download
         XLSX.writeFile(wb, `${fileName}.xlsx`); // Use the custom file name
     });
+
+    // Search script 
+
+    document.getElementById('search').addEventListener('click', function() {
+        const searchText = document.getElementById('searchInput').value.toLowerCase();
+        updateTable(searchText);
+    });
+
+    function updateTable(searchText = '') {
+        const tableBody = document.getElementById('tableBody');
+        tableBody.innerHTML = '';
+
+        // Populate the table, filtering by title or author if searchText is provided
+        booksData.forEach((book, index) => {
+            if (
+                book.Title.toLowerCase().includes(searchText) ||
+                book.Author.toLowerCase().includes(searchText)
+            ) {
+                const row = document.createElement('tr');
+
+                const titleCell = document.createElement('td');
+                titleCell.textContent = book.Title || "none";
+                row.appendChild(titleCell);
+
+                const authorCell = document.createElement('td');
+                authorCell.textContent = book.Author || "none";
+                row.appendChild(authorCell);
+
+                const isbnCell = document.createElement('td');
+                isbnCell.textContent = book.ISBN ? book.ISBN : "none";
+                row.appendChild(isbnCell);
+
+                // Create the button
+                const actionCell = document.createElement('td');
+                const editButton = document.createElement('button');
+                editButton.textContent = 'Edit';
+                editButton.onclick = function () {
+                    openEditModal(index);
+                };
+                actionCell.appendChild(editButton);
+                row.appendChild(actionCell);
+
+                tableBody.appendChild(row);
+            }
+        });
+    }
 </script>
 
     
